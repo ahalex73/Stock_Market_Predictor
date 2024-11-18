@@ -2,7 +2,8 @@ import numpy as np
 from tensorflow.keras.utils import Sequence
 
 class DataGeneratorSeq(Sequence):
-    def __init__(self, prices, batch_size, num_unroll, predict):
+    def __init__(self, prices, batch_size, num_unroll, predict, **kwargs):
+        super().__init__(**kwargs)  # Ensure super constructor is called
         # Ensure prices is a numpy array for efficient indexing
         self._prices = np.array(prices, dtype=np.float32)
         self._prices_length = len(self._prices) - num_unroll
@@ -14,17 +15,20 @@ class DataGeneratorSeq(Sequence):
         # Initialize cursors for each batch
         self._cursor = [offset * self._segments for offset in range(self._batch_size)]
     
-    def __getitem__(self, index):
-        # __getitem__ will simply call next_batch to retrieve the batch data
-        # Get the next batch (this keeps your existing `next_batch` method intact)
-        if self._predict:
-            batch_data = self.next_batch()
-            return batch_data  # Return only data during prediction phase
-        else:
-            batch_data, batch_labels = self.next_batch()
-            return batch_data, batch_labels
+    # def __getitem__(self, index):
+    #     # __getitem__ will simply call next_batch to retrieve the batch data
+    #     # Get the next batch (this keeps your existing `next_batch` method intact)
+    #     if self._predict:
+    #         batch_data = self.next_batch()
+    #         return batch_data  # Return only data during prediction phase
+    #     else:
+    #         print("Batch data shape:", batch_data.shape)
+    #         print("Batch labels shape:", batch_labels.shape)
+
+    #         batch_data, batch_labels = self.next_batch()
+    #         return batch_data, batch_labels
     
-    def next_batch(self):
+    def __getitem__(self, index):
         # Initialize batch_data and batch_labels with the correct shape
         batch_data = np.zeros((self._batch_size, self._num_unroll, 1), dtype=np.float32)
         batch_labels = np.zeros((self._batch_size, self._num_unroll, 1), dtype=np.float32)
