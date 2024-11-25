@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import tensorflow as tf 
 from tensorflow.keras.preprocessing import timeseries_dataset_from_array
 import numpy as np 
-from sklearn.metrics import mean_absolute_error, mean_squared_error
+from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
 
 # User imports
 import get_data
@@ -32,9 +32,6 @@ def main():
     num_nodes = [200, 200, 150]  # Number of hidden nodes in each LSTM layer
     dropout = 0.2  # Dropout amount
 
-    # # Data generator for training data
-    # dg = DataGeneratorSeq(trainData, batch_size, num_unrollings, False)
-
     # Parameters
     max_samples = (len(trainData) - num_unrollings) // batch_size * batch_size
     trainData = trainData[:max_samples + num_unrollings]
@@ -54,8 +51,6 @@ def main():
         # If it's the last batch, check the size
         if i == len(dataset) - 1:
             print(f"Last batch - Input batch size: {batch_x.shape[0]}, Target batch size: {batch_y.shape[0]}")
-
-    # Check if the last batch size is smaller than the batch size
 
     # Step 3: Build the LSTM Model
     # Define LSTM layers with dropout
@@ -92,99 +87,48 @@ def main():
     model.compile(optimizer=tf.keras.optimizers.Adam(), loss='mse')
 
     model.fit(dataset, epochs=1, verbose=1)
-    # # Step 5: Training Loop (Example)
-    # @tf.function
-    # def train_step(model, batch_data, batch_labels):
-    #     with tf.GradientTape() as tape:
-    #         predictions = model(batch_data, training=True)
-    #         loss_fn = tf.keras.losses.MeanSquaredError()
-    #         loss = loss_fn(batch_labels, predictions)
-    #     grads = tape.gradient(loss, model.trainable_variables)
-    #     model.optimizer.apply_gradients(zip(grads, model.trainable_variables))
-    #     return loss
-    
-    # # In practice, you would replace this with real training data and loops
-    # epochs = 1  # Set to your desired number of epochs
 
-    # # Generate training data batch-wise and fit the model
-    # for epoch in range(epochs):
-    #     for step in range(len(trainData) // batch_size):
-    #         batch_data, batch_labels = dg.next_batch()
+    # Make predictions on the test data
+    sequence_length = num_unrollings  
 
-    #         # Reshape batch data for LSTM input
-    #         batch_data = batch_data.reshape(batch_size, num_unrollings, D)
-    #         batch_labels = batch_labels.reshape(batch_size, num_unrollings, 1)
-
-    #         # Ensure that both batch_data and batch_labels are tensors
-    #         batch_data = tf.convert_to_tensor(batch_data, dtype=tf.float32)
-    #         batch_labels = tf.convert_to_tensor(batch_labels, dtype=tf.float32)
-
-    #         # Train model on the batch
-    #         loss = train_step(model, batch_data, batch_labels)
-    #         print(f'Epoch {epoch+1}, Step {step+1}, Loss: {loss}')
-
-   # Step 6: Making Predictions (optional)
-    # Assuming test_data is generated similarly to how training data is created
-    test_data = np.random.rand(500, 50, 1)  # Example shape (500 samples, 50 time steps, 1 feature)
-    # test_labels = np.random.rand(500, 1)  # Replace with your actual labels
-
-    # Step 2: Make predictions
-    # model.reset_states()
-    # Use a loop to handle predictions manually:
-    # dg_test = DataGeneratorSeq(testData, 32, num_unrollings, predict=True)
-    # predictions = []
-    # for batch_data in dg_test:
-    #     pred = model.predict(batch_data, batch_size=32)  # predict on the batch
-    #     predictions.append(pred)
-
-    # Convert predictions to numpy array for easy analysis
-    # predictions = np.concatenate(predictions, axis=0)# Define parameters (same as used in training)
-    # predict_sequence_length = 50
-    # predict_batch_size = 500
-
-    # # Prepare the test dataset (Ensure it has the same structure as trainData)
-    # test_dataset = tf.keras.utils.timeseries_dataset_from_array(
-    #     data=testData,  # Use testData here
-    #     targets=testData[predict_sequence_length:],  # Shifted version of testData for the target
-    #     sequence_length=predict_sequence_length,
-    #     batch_size=predict_batch_size,
-    #     shuffle=False  # Do not shuffle for prediction, as the order matters
-    # )
-
-    # # Make predictions on the test data
-    # predictions = model.predict(test_dataset)
-    # Define your batch size
-    batch_size = 500
-    sequence_length = 50  # Your sequence length
+    # Adjusting test batch size so generated time series data sets are the correct size. 
+    adjusted_batch_size = batch_size + sequence_length - 1
 
     # Split the test data into windows of sequences
     test_data = np.array(testData)  # Convert to a numpy array if it's not already
     total_samples = len(test_data)
 
-    # Calculate the number of batches (full and partial)
-    full_batches = total_samples // batch_size
-    remaining_samples = total_samples % batch_size
+    # Calculate the number of full batches that can be produced from test_data 
+    full_batches = total_samples // adjusted_batch_size
+    remaining_samples = total_samples % adjusted_batch_size
+
+    print(f"Test Data size before adjustment: {total_samples}")
+    print(f"Adjusted Batch size: {adjusted_batch_size}")
     print(f"full batches: {full_batches}, remaining samples: {remaining_samples}")
+
+    # Drop the incomplete batch from the beginning of the data set. 
+    test_data = test_data[-(full_batches * adjusted_batch_size):]
+    print(f"Adjusted test data size: {len(test_data)}")
 
     # Create the dataset (we will use a for loop to handle dynamic batch sizes)
     predictions = []
 
     for i in range(full_batches):
         # Get the current batch
-        batch_start = i * batch_size
-        batch_end = (i + 1) * batch_size
+        batch_start = i * adjusted_batch_size
+        batch_end = (i + 1) * adjusted_batch_size
         batch_data = test_data[batch_start:batch_end]
         print(f"Batch {i} shape: {batch_data.shape}")
         
         # Create the dataset for the batch
         batch_dataset = tf.keras.utils.timeseries_dataset_from_array(
             data=batch_data,
-            targets=batch_data[sequence_length:],
+            targets=batch_data,
             sequence_length=sequence_length,
             batch_size=batch_size,
             shuffle=False
         )
-        for batch_x, batch_y in dataset.take(1):
+        for batch_x, batch_y in batch_dataset.take(1):
             print("Input batch shape:", batch_x.shape)  # Should be (batch_size, sequence_length, 1)
             print("Target batch shape:", batch_y.shape)  # Should be (batch_size, 1)
 
@@ -192,56 +136,37 @@ def main():
         batch_predictions = model.predict(batch_dataset, batch_size=batch_size)
         predictions.append(batch_predictions)
 
-    # Handle the remaining smaller batch if there are any leftover samples
-    if remaining_samples > 0:
-        # Get the last batch (which might be smaller than batch_size)
-        last_batch_data = test_data[full_batches * batch_size:]
-        
-        # Create the dataset for the smaller batch
-        last_batch_dataset = tf.keras.utils.timeseries_dataset_from_array(
-            data=last_batch_data,
-            targets=last_batch_data[sequence_length:],
-            sequence_length=sequence_length,
-            batch_size=remaining_samples,  # Smaller batch size
-            shuffle=False
-        )
-        
-        # Make predictions for the last batch
-        last_batch_predictions = model.predict(last_batch_dataset)
-        predictions.append(last_batch_predictions)
-
     # Convert predictions to a single numpy array (if needed)
     predictions = np.concatenate(predictions, axis=0)
 
-    # The predictions will be in the shape of (num_samples, sequence_length, 1), adjust as needed
-    print(predictions)
+    # Remove the data points where predictions were not made. 
+    actual_values = test_data[sequence_length - 1:sequence_length - 1 + len(predictions)]
+    print(f"Predictions len {len(predictions)}, Actual data len: {len(actual_values)}")
+
+    # Calculate metrics
+    mae = mean_absolute_error(actual_values, predictions)
+    mse = mean_squared_error(actual_values, predictions)
+    rmse = np.sqrt(mse)
+    r2 = r2_score(actual_values, predictions)
+    mape = np.mean(np.abs((actual_values - predictions) / actual_values)) * 100
+
+    print(f"Mean Absolute Error (MAE): {mae}")
+    print(f"Mean Squared Error (MSE): {mse}")
+    print(f"Root Mean Squared Error (RMSE): {rmse}")
+    print(f"Mean Absolute Percentage Error (MAPE): {mape}%")
+    print(f"R² Score: {r2}")
 
     # Optionally, plot predictions vs actual data (e.g., for the first batch)
-    plt.figure(figsize=(18, 9))
-    plt.plot(range(len(predictions)), predictions, color='orange', label='Predictions')
+    plt.figure(figsize=(10, 6))
+    plt.plot(actual_values, label="Actual Values", color="blue")
+    plt.plot(predictions, label="Predictions", color="orange", linestyle="--")
 
-    # We assume that the last value of each batch corresponds to the target
-    # (i.e., the stock price) in the actual data
-    plt.plot(range(len(dg_test[0][0])), dg_test[0][0][:, -1, 0], color='blue', label='Actual')
-
-    plt.xlabel('Time Step')
-    plt.ylabel('Stock Price')
+    plt.title("Predictions vs Actual Values")
+    plt.xlabel("Time Step")
+    plt.ylabel("Value")
     plt.legend()
+    plt.grid(True)
     plt.show()
-
-    # Calculate Mean Absolute Error (MAE)
-    mae = mean_absolute_error(test_labels, predictions)
-    print(f"Mean Absolute Error (MAE): {mae}")
-
-    # Calculate Mean Squared Error (MSE)
-    mse = mean_squared_error(test_labels, predictions)
-    print(f"Mean Squared Error (MSE): {mse}")
-
-    # Calculate Root Mean Squared Error (RMSE)
-    rmse = np.sqrt(mse)
-    print(f"Root Mean Squared Error (RMSE): {rmse}")
-
-
 
 if __name__ == '__main__':
     main()
