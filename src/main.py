@@ -31,6 +31,9 @@ def main():
     num_nodes = [200, 200, 150]  # Number of hidden nodes in each LSTM layer
     dropout = 0.2  # Dropout amount
 
+    # Reset state 
+    tf.keras.backend.clear_session()
+    
     # Parameters
     max_samples = (len(trainData) - num_unrollings) // batch_size * batch_size
     trainData = trainData[:max_samples + num_unrollings]
