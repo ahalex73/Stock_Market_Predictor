@@ -18,7 +18,6 @@ def main():
 
     # plt.figure(figsize = (18,9))
     # plt.plot(range(dataFrame.shape[0]),midData,color='b',label='True')
-    # plt.plot(range(20,trainData.size),std_avg_predictions,color='orange',label='Prediction')
     # plt.xticks(range(0, dataFrame.shape[0], 500), dataFrame['Date'].iloc[::500], rotation=45)
     # plt.xlabel('Date')
     # plt.ylabel('Mid Price')

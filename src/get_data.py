@@ -21,8 +21,11 @@ def GetData(ticker):
         # JSON file with all the stock market data for AAL from the last 20 years
         url_string = "https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=%s&outputsize=full&apikey=%s"%(ticker,api_key)
 
-        # Save data to this file
-        file_to_save = 'stock_market_data-%s.csv'%ticker
+        # Save data to this file# Define the relative directory and file path
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        relative_directory = 'Stocks'
+        absolute_directory = os.path.join(script_dir, relative_directory)
+        file_to_save = os.path.join(absolute_directory, f'stock_market_data-{ticker}.csv')
 
         # If you haven't already saved data,
         # Go ahead and grab the data from the url
@@ -39,8 +42,11 @@ def GetData(ticker):
                                 float(v['4. close']),float(v['1. open'])]
                     df.loc[-1,:] = data_row
                     df.index = df.index + 1
+
+            print(df.columns)
             print('Data saved to : %s'%file_to_save)        
             df.to_csv(file_to_save, index_label="Index")
+            df = pd.read_csv(file_to_save)
 
         # If the data is already there, just load it from the CSV
         else:
