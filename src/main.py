@@ -4,14 +4,15 @@ import tensorflow as tf
 from tensorflow.keras.preprocessing import timeseries_dataset_from_array
 import numpy as np 
 from sklearn.metrics import mean_absolute_error, mean_squared_error, r2_score
+import argparse
 
 # User imports
 import get_data
 import predictor
 from data_generator import DataGeneratorSeq
 
-def main():
-    dataFrame = get_data.GetData("SYK")
+def main(ticker):
+    dataFrame = get_data.GetData(ticker)
     midData, trainData, testData = predictor.preProcessData(dataFrame)
     print(f"{len(trainData)}")
     # trainData, std_avg_predictions = predictor.makePrediction(dataFrame, trainData)
@@ -171,4 +172,16 @@ def main():
     plt.show()
 
 if __name__ == '__main__':
-    main()
+    # Initialize parser
+    parser = argparse.ArgumentParser(description="Stock Predictor")
+
+    # Add arguments
+    parser.add_argument('--stock', help='Stock Ticker (example: --stock AAL)')
+
+    # Parse arguments
+    args = parser.parse_args()
+
+    # Access arguments
+    print(f"Input: {args.stock}")
+
+    main(args.stock)
