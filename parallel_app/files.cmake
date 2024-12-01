@@ -1,11 +1,16 @@
 set ( PARALLEL_APP_COMMON_SRC
     common/src/main.cpp
+    common/src/parallel_server.cpp
+    common/src/thread_safe_queue.cpp
 )
 
 set (PARALLEL_APP_COMMON_INC
     common/inc/stdafx.h
     common/inc/transport_interface.h
     common/inc/transport_factory.h
+    common/inc/parallel_server.h
+    common/inc/thread_safe_queue.h
+    common/inc/common_config.h
 )
 
 if( ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )

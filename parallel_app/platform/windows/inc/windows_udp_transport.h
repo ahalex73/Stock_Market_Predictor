@@ -14,20 +14,26 @@
 
 class WindowsUdpTransport : public TransportInterface
 {
-private:
-    SOCKET udpSocket;
-    sockaddr_in serverAddress;
+    public:
+        WindowsUdpTransport() : _sendSocket(INVALID_SOCKET), _receiveSocket(INVALID_SOCKET) {}
 
-public:
-    WindowsUdpTransport() : udpSocket(INVALID_SOCKET) {}
+        bool InitializeSendSocket(const std::string& ipAddress, uint16_t port) override;
+        bool InitializeReceiveSocket(uint16_t port) override;
 
-    bool Initialize(const std::string& ipAddress, uint16_t port) override;
+        void DeInitialize() override;
 
-    void DeInitialize() override;
+        bool TransportSendMessage(const std::string& message) override;
+        
+        bool ReceiveMessage() override;
 
-    bool TransportSendMessage(const std::vector<uint8_t>& message) override;
+        bool PollReceiveSocket() override;
 
-    ~WindowsUdpTransport() override;
+        ~WindowsUdpTransport() override;
+    private:    
+        SOCKET _sendSocket;        // Socket for sending data
+        SOCKET _receiveSocket;     // Socket for receiving data
+        sockaddr_in _sendAddress;  // Address to send messages
+        sockaddr_in _receiveAddress; // Address to bind for receiving messages
 };
 
 #endif // _WINDOWS_UDP_TRANSPORT_H_
