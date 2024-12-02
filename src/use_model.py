@@ -31,6 +31,7 @@ def load_trained_model(model_save_path):
         print("No saved model found!")
         return None
 
+
 def predict_next_days(model, recent_data, scaler, days=50, sequence_length=50):
     predictions = []
     
@@ -62,9 +63,6 @@ def predict_next_days(model, recent_data, scaler, days=50, sequence_length=50):
     return predictions
 
 
-
-
-
 # Generate a Rating (0 or 1) for Stock Movement
 def generate_rating(predictions):
     # If the stock price is predicted to go up over the next 5 days, assign a rating of 1 (up)
@@ -76,7 +74,6 @@ def generate_rating(predictions):
     else:
         return 0  # Stock price is predicted to go down
     
-
 
 def main(saved_model_file_path, num_unrollings=50, batch_size=500, days=5):
 
@@ -106,8 +103,8 @@ def main(saved_model_file_path, num_unrollings=50, batch_size=500, days=5):
         rating = generate_rating(predictions)
         print(f"Stock prediction rating: {'Up' if rating == 1 else 'Down'}")
     
-    
-    return rating # Returns a 1 for up, 0 for down
+    return rating # Returns a 1 for up, 0 for down 
+
 
 if __name__ == '__main__':
     # Parse command-line arguments
