@@ -23,13 +23,6 @@ def preProcessData(df):
     low_prices = df.loc[:,'Low'].to_numpy()
     mid_prices = (high_prices+low_prices)/2.0
 
-    # plt.figure(figsize = (18,9))
-    # plt.plot(range(df.shape[0]),(df['Low']+df['High'])/2.0)
-    # plt.xticks(range(0,df.shape[0],500),df['Date'].loc[::500],rotation=45)
-    # plt.xlabel('Date',fontsize=18)
-    # plt.ylabel('Mid Price',fontsize=18)
-    # plt.show()
-
     total_index = df.loc[0, 'Index']
     trainingProportion = 0.8
     split_index = int(total_index * trainingProportion)
@@ -54,9 +47,6 @@ def preProcessData(df):
     print("Train data range after normalization:", train_data.min(), train_data.max())
     print("Test data range after normalization:", test_data.min(), test_data.max())
 
-    # train_data = mid_prices[:split_index]
-    # test_data = mid_prices[split_index:]
-
     print(train_data[0])
     print(test_data[0])
 
@@ -65,12 +55,6 @@ def preProcessData(df):
     test_data = test_data.reshape(-1,1)
 
     all_mid_data = np.concatenate([train_data,test_data],axis=0)
-    # plt.figure(figsize = (18,9))
-    # plt.plot(range(df.shape[0]),all_mid_data)
-    # plt.xticks(range(0,df.shape[0],500),df['Date'].loc[::500],rotation=45)
-    # plt.xlabel('Date',fontsize=18)
-    # plt.ylabel('Reshaped Mid Price',fontsize=18)
-    # plt.show()
 
     return all_mid_data, train_data, test_data
 

@@ -15,18 +15,6 @@ class DataGeneratorSeq(Sequence):
         # Initialize cursors for each batch
         self._cursor = [offset * self._segments for offset in range(self._batch_size)]
     
-    # def __getitem__(self, index):
-    #     # __getitem__ will simply call next_batch to retrieve the batch data
-    #     # Get the next batch (this keeps your existing `next_batch` method intact)
-    #     if self._predict:
-    #         batch_data = self.next_batch()
-    #         return batch_data  # Return only data during prediction phase
-    #     else:
-    #         print("Batch data shape:", batch_data.shape)
-    #         print("Batch labels shape:", batch_labels.shape)
-
-    #         batch_data, batch_labels = self.next_batch()
-    #         return batch_data, batch_labels
     
     def __getitem__(self, index):
         # Initialize batch_data and batch_labels with the correct shape
