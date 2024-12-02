@@ -7,6 +7,10 @@ import argparse
 import get_data
 import predictor
 from data_generator import DataGeneratorSeq
+import os
+
+def download_stock_data(ticker):
+    dataFrame = get_data.GetData(ticker)
 
 def train_and_save_model(ticker, model_save_path):
     dataFrame = get_data.GetData(ticker)
@@ -61,13 +65,19 @@ def train_and_save_model(ticker, model_save_path):
     model.fit(dataset, epochs=1, verbose=1)
 
     # Construct File Extension
-    model_save_path += ticker
-    model_save_path += '_'
-    model_save_path += 'model.keras'
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    absolute_directory = os.path.join(script_dir, model_save_path)
+    file_to_save = os.path.join(absolute_directory, f'{ticker}_model.keras')
+
+    # model_save_path += ticker
+    # model_save_path += '_'
+    # model_save_path += 'model.keras'
 
     # Save the trained model
-    model.save(model_save_path)
-    print(f"Model saved to {model_save_path}")
+    # model.save(model_save_path)
+    # print(f"Model saved to {model_save_path}")
+    model.save(file_to_save)
+    print(f"Model saved to {file_to_save}")
 
     return model
 

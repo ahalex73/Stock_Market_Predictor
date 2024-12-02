@@ -1,6 +1,6 @@
 #include "stdafx.h"
 #include "parallel_server.h"
-
+#include "parallel_client.h"
 
 InputParser::InputParser (int &argc, char **argv){
     for (int i=1; i < argc; ++i)
@@ -35,10 +35,42 @@ int main(int argc, char** argv)
         return 1;
     }
     std::ifstream config_file(config_file_path);
+    nlohmann::json jsonData = nlohmann::json::parse(config_file);
+    bool isServer = jsonData["is_server"];
 
-    ParallelServer app(config_file);
-    
+    if (true == isServer)
+    {
+        ParallelServer app(jsonData);
+        if(false == app.InitializeTransport())
+        {
+            std::cout << "Failed to initialize transport\n";
+        }
+        else
+        {
+            app.Run();
+        }
+    }
+    else
+    {
+        ParallelClient app(jsonData);
+        if(false == app.InitializeTransport())
+        {
+            std::cout << "Failed to initialize transport\n";
+        }
+        else
+        {
+            app.Run();
+        }
+    }
+}
 
-
-    // printf("Hello World!\n");
+bool IsUserQuit()
+{
+    #ifdef _WIN32
+        return Windows_IsUserQuit();
+    #elif defined(__linux__)
+        return Linux_IsUserQuit();
+    #else
+        return false;
+    #endif
 }

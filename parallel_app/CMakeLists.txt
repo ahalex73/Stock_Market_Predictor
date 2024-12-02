@@ -4,6 +4,17 @@ set(CMAKE_CXX_STANDARD_REQUIRED True )
 
 project(parallel_app)
 
+# Find the Python package
+find_package(Python3 REQUIRED COMPONENTS Interpreter Development)
+
+set(Python3_USE_DEBUG_RUNTIME OFF)
+
+# Include Python headers
+include_directories(${Python3_INCLUDE_DIRS})
+
+set(PYTHONPATH ${CMAKE_CURRENT_LIST_DIR}/../src)
+set(ENV{PYTHONPATH} ${PYTHONPATH})
+
 # 3rd party includes
 set(JSON_BuildTests OFF CACHE INTERNAL "")
 add_subdirectory(3rd_party/nlohmann_json)
@@ -29,3 +40,6 @@ elseif( ${CMAKE_SYSTEM_NAME} STREQUAL "Linux" )
 endif()
 
 target_link_libraries(${PROJECT_NAME} PRIVATE nlohmann_json::nlohmann_json)
+
+# Link the Python libraries
+target_link_libraries(${PROJECT_NAME} PRIVATE ${Python3_LIBRARIES})

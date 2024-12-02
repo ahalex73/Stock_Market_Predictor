@@ -24,7 +24,7 @@ class WindowsUdpTransport : public TransportInterface
 
         bool TransportSendMessage(const std::string& message) override;
         
-        bool ReceiveMessage() override;
+        bool ReceiveMessage(std::string& senderIp, uint16_t& senderPort) override;
 
         bool PollReceiveSocket() override;
 
@@ -34,6 +34,7 @@ class WindowsUdpTransport : public TransportInterface
         SOCKET _receiveSocket;     // Socket for receiving data
         sockaddr_in _sendAddress;  // Address to send messages
         sockaddr_in _receiveAddress; // Address to bind for receiving messages
+        // std::unordered_map<std::string, sockaddr_in> _clientList;
 };
 
 #endif // _WINDOWS_UDP_TRANSPORT_H_

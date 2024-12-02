@@ -16,18 +16,26 @@ struct ClientInfo
 class ParallelServer
 {
     public:
-        ParallelServer(std::ifstream& config_file);
+        ParallelServer(nlohmann::json jsonData);
         ~ParallelServer();
         bool InitializeTransport();
         void Run();
         void MessageListenerThread();
         void MessageSendThread();
+        void ProcessReceivedMessage();
+        void AddClientToList(std::string& appName, const std::string senderIp, const uint16_t senderPort);
+        void AddMessageToQueue(MessageTypes msgId, const std::string destApp, const std::string msg);
+        void TestRunnerThread();
+        bool RunDownloadData();
+        bool RunTrainModel();
+        bool RunMakePredictions();
 
     private:
         bool _isQuit = false;
+        std::string _appName;
         SocketInfo _serverSocketInfo;
         std::shared_ptr<TransportInterface> _transport;
-        ThreadSafeQueue _txMessageQueue;
+        ThreadSafeQueue<std::pair<std::string, std::string>> _txMessageQueue;
         std::unordered_map<std::string, ClientInfo> _clientList;
 };
 #endif // _PARALLEL_SERVER_H_

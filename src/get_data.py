@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import os
 from sklearn.preprocessing import MinMaxScaler
-
+import argparse
 
 def GetData(ticker):
     data_source = 'alphavantage' # alphavantage or kaggle
@@ -58,3 +58,12 @@ def GetData(ticker):
         print('Loaded data from the Kaggle repository')
     
     return df
+
+def main(ticker):
+    dataFrame = GetData(ticker)
+    
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description="Stock Predictor")
+    parser.add_argument('--stock', help='Stock Ticker (example: --stock SYK)')
+    args = parser.parse_args()
+    main(args.stock)

@@ -11,12 +11,26 @@
 #include <fstream>
 #include <thread>
 #include <unordered_map>
+#include <regex>
+#include <limits>
+#include <algorithm>
+#include <sstream>
+#include <cstdlib>
 
 /* 3rd party includes */
 #include <nlohmann/json.hpp>
 
 /* Project includes */
 #include "common_config.h"
+
+#ifdef _WIN32
+#include "windows_udp_transport.h"
+#include "windows_platform_functions.h"
+#elif defined(__linux__)
+#include "linux_udp_transport.h"
+#else
+#error "Unsupported platform"
+#endif
 
 class InputParser{
     public:
@@ -28,4 +42,7 @@ class InputParser{
     private:
         std::vector <std::string> tokens;
 };
+
+bool IsUserQuit();
+
 #endif //_STDAFX_H_

@@ -1,7 +1,7 @@
 set ( PARALLEL_APP_COMMON_SRC
     common/src/main.cpp
     common/src/parallel_server.cpp
-    common/src/thread_safe_queue.cpp
+    common/src/parallel_client.cpp
 )
 
 set (PARALLEL_APP_COMMON_INC
@@ -9,6 +9,7 @@ set (PARALLEL_APP_COMMON_INC
     common/inc/transport_interface.h
     common/inc/transport_factory.h
     common/inc/parallel_server.h
+    common/inc/parallel_client.h
     common/inc/thread_safe_queue.h
     common/inc/common_config.h
 )
@@ -16,9 +17,11 @@ set (PARALLEL_APP_COMMON_INC
 if( ${CMAKE_SYSTEM_NAME} STREQUAL "Windows" )
 set( PARALLEL_APP_WIN_SRC 
     platform/windows/src/windows_udp_transport.cpp
+    platform/windows/src/windows_platform_functions.cpp
 ) 
 set( PARALLEL_APP_WIN_INC 
     platform/windows/inc/windows_udp_transport.h
+    platform/windows/inc/windows_platform_functions.h
 ) 
 else() 
 set( PARALLEL_APP_WIN_SRC )

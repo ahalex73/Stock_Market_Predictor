@@ -78,12 +78,16 @@ def generate_rating(predictions):
 def main(saved_model_file_path, num_unrollings=50, batch_size=500, days=5):
 
     STOCKS_DATA_FOLDER = 'Stocks/'
-    
+    script_dir = os.path.dirname(os.path.abspath(__file__))
+    relative_directory = 'Stocks'
+    absolute_directory = os.path.join(script_dir, relative_directory)
+
     # Construct CSV filepath from saved_model_file_path
     filename = os.path.basename(saved_model_file_path)  # Extracts "SYK_model.keras"
     ticker = filename.split('_')[0]                     # Extracts SYK
     #print(ticker)                                      # Output: SYK
-    model_name = (STOCKS_DATA_FOLDER + 'stock_market_data-' + ticker + '.csv')
+    model_name = os.path.join(absolute_directory, f'stock_market_data-{ticker}.csv')
+    # model_name = (STOCKS_DATA_FOLDER + 'stock_market_data-' + ticker + '.csv')
 
     # Load stock data from csv
     stock_data = load_stock_data_from_csv(model_name)

@@ -10,8 +10,22 @@
 struct SocketInfo
 {
     std::string ip;
-    int portNumber; 
+    uint16_t portNumber; 
 
+};
+
+struct MessageInfo
+{
+    std::string senderIp;
+    uint16_t senderPort;
+    std::string message;
+};
+
+struct MessageContents
+{
+    std::string appName;
+    MessageTypes messageId;
+    std::string messageContent;
 };
 
 class TransportInterface
@@ -30,13 +44,13 @@ public:
     virtual bool TransportSendMessage(const std::string& message) = 0;
     
     // Receive a message 
-    virtual bool ReceiveMessage() = 0;
+    virtual bool ReceiveMessage(std::string& senderIp, uint16_t& senderPort) = 0;
 
     // Poll the receive socket
     virtual bool PollReceiveSocket() = 0;
 
 public:    
-    ThreadSafeQueue _rxMessageQueue;
+    ThreadSafeQueue<MessageInfo> _rxMessageQueue;
 
 };
 #endif _TRANSPORT_H_

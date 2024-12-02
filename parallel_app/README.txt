@@ -57,5 +57,8 @@ Parallel App Message types
 
 Parallel App Message structure
 
-    Client:
-        [APP_NAME].[MESSAGE_ID].[MESSAGE_CONTENTS]
+    [APP_NAME].[MESSAGE_ID].[MESSAGE_CONTENTS]
+
+Client App naming convention
+    Predictor_[MARKET_TYPE]
+    For example: Predictor_Technology

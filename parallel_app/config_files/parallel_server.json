@@ -1,7 +1,14 @@
 {
+    "is_server": true,
     "server_socket": {
         "ip" : "127.0.0.1",
-        "port" : "8080"
-    }
-
+        "port" : "10000"
+    },    
+    "client_list": [
+        {
+            "app_name": "Predictor_Technology",
+            "ip": "127.0.0.1",
+            "port_number": "10001"
+        }
+    ]
 }
