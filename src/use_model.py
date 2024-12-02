@@ -31,21 +31,38 @@ def load_trained_model(model_save_path):
         print("No saved model found!")
         return None
 
-def predict_next_days(model, recent_data, scaler, days=5):
+def predict_next_days(model, recent_data, scaler, days=50, sequence_length=50):
     predictions = []
-    current_input = recent_data[-1].reshape(1, -1)  # Get the most recent data
+    
+    # Ensure the input sequence has the required length
+    if len(recent_data) < sequence_length:
+        recent_data = np.pad(recent_data, ((sequence_length - len(recent_data), 0), (0, 0)), mode='edge')
+    
+    # Reshape the input to match the expected input shape: (batch_size, time_steps, features)
+    current_input = recent_data[-sequence_length:].reshape(1, sequence_length, 1)  # Last `sequence_length` data points
     
     for _ in range(days):
+        # Predict the next value
         prediction = model.predict(current_input)
+        
+        # Check if the prediction has the expected shape (1, 1)
+        if prediction.shape != (1, 1):
+            # Assuming the model predicts a 500-length vector, pick the scalar you need (e.g., the first element)
+            prediction = prediction[0, 0]
+        
         predictions.append(prediction)
-        # Reshape the prediction to be 1D, and then update the current input with the new prediction
-        prediction_1d = prediction.flatten()  # Flatten the 2D prediction to a 1D array
-        current_input = np.concatenate((current_input[0][1:], prediction_1d), axis=0).reshape(1, -1)
+        
+        # Flatten the prediction to a 1D array and update the input
+        current_input = np.roll(current_input, shift=-1, axis=1)  # Shift input to the left
+        current_input[0, -1] = prediction  # Replace the last value with the new prediction
 
     # Inverse transform the predictions to get the original scale
     predictions = scaler.inverse_transform(np.array(predictions).reshape(-1, 1))
 
     return predictions
+
+
+
 
 
 # Generate a Rating (0 or 1) for Stock Movement
