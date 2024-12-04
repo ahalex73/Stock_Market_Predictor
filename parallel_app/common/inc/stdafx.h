@@ -16,6 +16,7 @@
 #include <algorithm>
 #include <sstream>
 #include <cstdlib>
+#include <chrono>
 
 /* 3rd party includes */
 #include <nlohmann/json.hpp>

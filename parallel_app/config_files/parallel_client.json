@@ -9,7 +9,8 @@
         "ip" : "127.0.0.1",
         "port" : "10001"
     },
-    "python_model_script_dir" : "C:\\Users\\AJCic\\Documents\\CS-5300\\Stock_Market_Predictor\\src",
+    "python_model_script_dir" : "C:\\Users\\acichy\\TestCode\\Stock_Market_Predictor\\src",
+    "python_venv" : "C:\\Users\\acichy\\TestCode\\Stock_Market_Predictor\\myenv\\Scripts\\python",
     "download_data": {
         "script_name": "get_data",
         "function_name": "download_stock_data"

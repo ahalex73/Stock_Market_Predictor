@@ -35,7 +35,6 @@ char GetOption()
         std::cin.clear(); 
         std::cin.ignore(10000, '\n'); // Use a large number to discard input
         std::cout << "Invalid choice. Please enter a number between 1 and 3, or q to quit.\n";
-    
     }
     return option;
 }
@@ -53,15 +52,23 @@ ParallelServer::ParallelServer(nlohmann::json jsonData)
     // Access the client_list
     for (const auto& client : jsonData["client_list"]) 
     {
-        std::string appName = client["app_name"];
-        std::string ip = client["ip"];
+        ClientInfo newClient;
+        newClient._appName = client["app_name"];
+        newClient._clientSocketInfo.ip = client["ip"];
         std::string port = client["port_number"];
+        newClient._clientSocketInfo.portNumber = stoi(port);
+        newClient._transport = UdpTransportFactory::CreateTransport();
+        newClient._stockList = client["stock_list"];
 
-        std::cout << "App Name: " << appName << std::endl;
-        std::cout << "Client IP: " << ip << std::endl;
-        std::cout << "Client Port: " << port << std::endl;
+        std::cout << "App Name: " << newClient._appName << std::endl;
+        std::cout << "Client IP: " << newClient._clientSocketInfo.ip << std::endl;
+        std::cout << "Client Port: " << newClient._clientSocketInfo.portNumber << std::endl;    
+        std::cout << "Stock List: " << newClient._stockList << std::endl;
+        
+        newClient._transport->InitializeSendSocket(newClient._clientSocketInfo.ip, newClient._clientSocketInfo.portNumber);
 
-        AddClientToList(appName, ip, atoi(port.c_str()));
+
+        _clientList[newClient._appName] = newClient;
     }
     _transport = UdpTransportFactory::CreateTransport();
 }
@@ -244,21 +251,6 @@ void ParallelServer::ProcessReceivedMessage()
     }
 }
 
-void ParallelServer::AddClientToList(std::string& appName, const std::string senderIp, const uint16_t senderPort)
-{
-    ClientInfo newClientInfo;
-    SocketInfo newSocketInfo;
-
-    newSocketInfo.ip = senderIp;
-    newSocketInfo.portNumber = senderPort;
-
-    newClientInfo._appName = appName;
-    newClientInfo._transport = UdpTransportFactory::CreateTransport();
-    newClientInfo._transport->InitializeSendSocket(senderIp, senderPort);
-    newClientInfo._clientSocketInfo = newSocketInfo;
-    _clientList[appName] = newClientInfo;
-}
-
 void ParallelServer::AddMessageToQueue(MessageTypes msgId, const std::string destApp, const std::string msg)
 {
     std::string txMsg(_appName + "." + MessageIdToString(msgId) + "." + msg);
@@ -269,12 +261,14 @@ void ParallelServer::AddMessageToQueue(MessageTypes msgId, const std::string des
 bool ParallelServer::RunDownloadData()
 {
     bool retVal = false;
+    _startTime = std::chrono::high_resolution_clock::now();
     for (const auto& app : _clientList)
     {
         std::cout << "Adding Stock List message to queue for " << app.first << "\n";
-        AddMessageToQueue(MessageTypes::STOCK_LIST, app.first, "AAL,SYK"); 
+        AddMessageToQueue(MessageTypes::STOCK_LIST, app.first, app.second._stockList); 
         retVal = true;
     }
+    _endTime = std::chrono::high_resolution_clock::now();
     return retVal;
 }
 

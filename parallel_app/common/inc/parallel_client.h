@@ -33,6 +33,7 @@ class ParallelClient
         ThreadSafeQueue<std::string> _txMessageQueue;
         std::vector<std::string> _stockList;
         std::string _trainedModelPath;
+        std::string _venvPath;
 };
 
 #endif // _PARALLEL_CLIENT_H

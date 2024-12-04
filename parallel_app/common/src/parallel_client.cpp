@@ -1,5 +1,4 @@
 #include "parallel_client.h"
-#include "Python.h"
 
 ParallelClient::ParallelClient(nlohmann::json jsonData)
 {
@@ -24,6 +23,7 @@ ParallelClient::ParallelClient(nlohmann::json jsonData)
     _trainModelScript = {jsonData["train_model"]["script_name"], jsonData["train_model"]["function_name"]};
     _predictModelScript = {jsonData["predict_model"]["script_name"], jsonData["predict_model"]["function_name"]};
     _trainedModelPath = jsonData["predict_model"]["trained_model_path"];
+    _venvPath = jsonData["python_venv"];
     _transport = UdpTransportFactory::CreateTransport();
 }
 
@@ -171,89 +171,13 @@ bool ParallelClient::RunDownloadData(std::string msg)
     for (const auto& t : _stockList) 
     {
         std::cout << "Downloading stock " << t << "\n";
-        std::string command = "python " +  _pythonScriptDir + "\\" + _downloadDataScript.first + ".py --stock " + t;
+        std::string command = _venvPath + " " +  _pythonScriptDir + "\\" + _downloadDataScript.first + ".py --stock " + t;
         std::cout << "Command: " << command << "\n";
         system(command.c_str());
     }
-
-
-    // std::string venvPath = "C:\\Users\\AJCic\\Documents\\CS-5300\\Stock_Market_Predictor\\myenv";  // Replace with your virtual environment path
-    // std::string pythonExePath = venvPath + "\\Scripts\\python.exe";  // Path to the Python executable
-    // std::string pythonLibPath = venvPath + "\\Lib";  // Path to the Python Lib directory
-
-    // // Set the environment variables for Python
-    // _putenv_s("PYTHONHOME", venvPath.c_str());  // Set PYTHONHOME to the virtual environment
-    // _putenv_s("PYTHONEXECUTABLE", pythonExePath.c_str());  // Set Python executable path
-    // _putenv_s("PYTHONPATH", pythonLibPath.c_str());  // Set PYTHONPATH to the Lib directory
-
-    // // Initialize Python interpreter
-    // Py_Initialize();
-
-    // // Clear sys.path to avoid any global Python interference
-    // PyRun_SimpleString("import sys\nsys.path.clear()");
-
-    // // Add virtual environment paths to sys.path
-    // std::string commandAppend = "import sys\nsys.path.append(r'" + pythonLibPath + "')\n";
-    // commandAppend += "sys.path.append(r'" + venvPath + "\\Scripts')";  // Ensure Scripts is also added
-    // PyRun_SimpleString(commandAppend.c_str());
-
-    // std::stringstream ss(msg);
-    // std::string ticker;
-    // std::vector<std::string> tickerList;
-
-    // while (std::getline(ss, ticker, ',')) {
-    //     tickerList.push_back(ticker);
-    // }
-
-    // PyRun_SimpleString("import sys\nprint(sys.executable)");
-
-    // // Add the directory containing your Python script to the Python path
-    // std::string commandScript = "import sys\nsys.path.append('" + _pythonScriptDir + "')";
     
-    // PyRun_SimpleString(commandScript.c_str());
-
-    // // Import the Python script (example: script.py)
-    // PyObject* pName = PyUnicode_DecodeFSDefault(_downloadDataScript.first.c_str());  // Name of the Python script without extension
-    // PyObject* pModule = PyImport_Import(pName);
-    // Py_XDECREF(pName);
-
-    // if (pModule != nullptr) {
-    //     // Get the function from the module
-    //     PyObject* pFunc = PyObject_GetAttrString(pModule, _downloadDataScript.second.c_str());
-
-    //         // Print the parsed tickers
-    //     for (const auto& t : tickerList) {
-    //         std::cout << "Downloading stock " << t << "\n";
-        
-    //         if (pFunc && PyCallable_Check(pFunc)) {
-    //             // Call the function with no arguments (if it takes arguments, you can use Py_BuildValue)  
-    //             PyObject* pArg = PyUnicode_FromString(t.c_str());
-
-    //             // Call the function with arguments
-    //             PyObject* pValue = PyObject_CallObject(pFunc, pArg);
-
-    //             if (pValue != nullptr) {
-    //                 // If the function returns a value, print it
-    //                 std::cout << "Returned value: " << PyLong_AsLong(pValue) << std::endl; // assuming it's an integer
-    //                 Py_XDECREF(pValue);
-    //             } else {
-    //                 PyErr_Print();
-    //             }
-    //         } else {
-    //             if (PyErr_Occurred()) {
-    //                 PyErr_Print();
-    //             }
-    //         }
-    //     }
-    //     Py_XDECREF(pFunc);
-    //     Py_XDECREF(pModule);
-    // } else {
-    //     PyErr_Print();
-    // }
-
-    // // Finalize Python interpreter
-    // Py_Finalize();
-    // return true;
+    AddMessageToQueue(MessageTypes::STOCK_DATA_READY, "ready");
+     return true;
 }
 
 bool ParallelClient::RunTrainModel(std::string msg)
@@ -261,10 +185,11 @@ bool ParallelClient::RunTrainModel(std::string msg)
     for (const auto& t : _stockList) 
     {
         std::cout << "Training Model on stock " << t << "\n";
-        std::string command = "python " +  _pythonScriptDir + "\\" + _trainModelScript.first + ".py --stock " + t;
+        std::string command = _venvPath + " " +  _pythonScriptDir + "\\" + _trainModelScript.first + ".py --stock " + t;
         std::cout << "Command: " << command << "\n";
         system(command.c_str());
     }
+    AddMessageToQueue(MessageTypes::TRAINING_COMPLETE, "training_done");
     return true;
 }
 
@@ -273,9 +198,10 @@ bool ParallelClient::RunMakePredictions(std::string msg)
     for (const auto& t : _stockList) 
     {
         std::cout << "Predicting Model on stock " << t << "\n";
-        std::string command = "python " +  _pythonScriptDir + "\\" + _predictModelScript.first + ".py --saved_model_path " + _pythonScriptDir + "\\" + _trainedModelPath + "/" + t +"_model.keras";
+        std::string command = _venvPath + " " +  _pythonScriptDir + "\\" + _predictModelScript.first + ".py --saved_model_path " + _pythonScriptDir + "\\" + _trainedModelPath + "/" + t +"_model.keras";
         std::cout << "Command: " << command << "\n";
         system(command.c_str());
     }
+    AddMessageToQueue(MessageTypes::PREDICTIONS_COMPLETE, "predictions_done");
     return true;
 }
