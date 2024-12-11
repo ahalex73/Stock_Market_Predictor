@@ -1,0 +1,27 @@
+{
+    "app_name": "Predictor_NVDA",
+    "is_server": false,
+    "server_socket": {
+        "ip" : "127.0.0.1",
+        "port" : "10000"
+    },
+    "client_socket": {
+        "ip" : "127.0.0.1",
+        "port" : "10004"
+    },
+    "python_model_script_dir" : "C:\\Users\\acichy\\TestCode\\Stock_Market_Predictor\\src",
+    "python_venv" : "C:\\Users\\acichy\\TestCode\\Stock_Market_Predictor\\myenv\\Scripts\\python",
+    "download_data": {
+        "script_name": "get_data",
+        "function_name": "download_stock_data"
+    },
+    "train_model": {
+        "script_name": "main",
+        "function_name": "main"
+    },
+    "predict_model": {
+        "script_name": "use_model",
+        "function_name": "main",
+        "trained_model_path": "TrainedModels"
+    }
+}

@@ -69,6 +69,7 @@ ParallelServer::ParallelServer(nlohmann::json jsonData)
 
 
         _clientList[newClient._appName] = newClient;
+        _numClients++;
     }
     _transport = UdpTransportFactory::CreateTransport();
 }
@@ -237,12 +238,15 @@ void ParallelServer::ProcessReceivedMessage()
             break;
 
         case MessageTypes::STOCK_DATA_READY:
+            HandleDownloadMessage();
             break;
 
         case MessageTypes::TRAINING_COMPLETE:
+            HandleTrainMessage();
             break;
 
         case MessageTypes::PREDICTIONS_COMPLETE:
+            HandlePredictMessage();
             break;
 
         default:
@@ -261,20 +265,24 @@ void ParallelServer::AddMessageToQueue(MessageTypes msgId, const std::string des
 bool ParallelServer::RunDownloadData()
 {
     bool retVal = false;
-    _startTime = std::chrono::high_resolution_clock::now();
+    _clientActionStatus._numDownloadMsgsRx = 0;
+    _clientActionStatus._downloadsComplete = false;
+    _clientActionStatus._downloadStartTime = std::chrono::high_resolution_clock::now();
     for (const auto& app : _clientList)
     {
         std::cout << "Adding Stock List message to queue for " << app.first << "\n";
         AddMessageToQueue(MessageTypes::STOCK_LIST, app.first, app.second._stockList); 
         retVal = true;
     }
-    _endTime = std::chrono::high_resolution_clock::now();
     return retVal;
 }
 
 bool ParallelServer::RunTrainModel()
 {
     bool retVal = false;
+    _clientActionStatus._numTrainMsgsRx = 0;
+    _clientActionStatus._trainingComplete = false;
+    _clientActionStatus._trainingStartTime = std::chrono::high_resolution_clock::now();
     for (const auto& app : _clientList)
     {
         std::cout << "Adding Stock List message to queue for " << app.first << "\n";
@@ -287,6 +295,9 @@ bool ParallelServer::RunTrainModel()
 bool ParallelServer::RunMakePredictions()
 {
     bool retVal = false;
+    _clientActionStatus._numPredictMsgsRx = 0;
+    _clientActionStatus._predictionsComplete = false;
+    _clientActionStatus._predictionsStartTime = std::chrono::high_resolution_clock::now();
     for (const auto& app : _clientList)
     {
         std::cout << "Adding Stock List message to queue for " << app.first << "\n";
@@ -294,4 +305,41 @@ bool ParallelServer::RunMakePredictions()
         retVal = true;
     }
     return retVal;
+}
+
+void ParallelServer::HandleDownloadMessage()
+{
+    _clientActionStatus._numDownloadMsgsRx++;
+    if (_numClients == _clientActionStatus._numDownloadMsgsRx)
+    {
+        _clientActionStatus._downloadsComplete = true;
+        _clientActionStatus._downloadEndTime = std::chrono::high_resolution_clock::now();
+        _clientActionStatus._downloadElapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(_clientActionStatus._downloadEndTime - _clientActionStatus._downloadStartTime);
+        std::cout << "Download Elapsed time: " << _clientActionStatus._downloadElapsedTime.count() << " milliseconds\n";
+        
+    }
+}
+
+void ParallelServer::HandleTrainMessage()
+{
+    _clientActionStatus._numTrainMsgsRx++;
+    if (_numClients == _clientActionStatus._numTrainMsgsRx)
+    {
+        _clientActionStatus._trainingComplete = true;
+        _clientActionStatus._trainingEndTime = std::chrono::high_resolution_clock::now();
+        _clientActionStatus._trainingElapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(_clientActionStatus._trainingEndTime - _clientActionStatus._trainingStartTime);
+        std::cout << "Training Elapsed time: " << _clientActionStatus._trainingElapsedTime.count() << " milliseconds\n";
+    }
+}
+
+void ParallelServer::HandlePredictMessage()
+{
+    _clientActionStatus._numPredictMsgsRx++;
+    if (_numClients == _clientActionStatus._numPredictMsgsRx)
+    {
+        _clientActionStatus._predictionsComplete = true;
+        _clientActionStatus._predictionsEndTime = std::chrono::high_resolution_clock::now();
+        _clientActionStatus._predictionsElapsedTime = std::chrono::duration_cast<std::chrono::milliseconds>(_clientActionStatus._predictionsEndTime - _clientActionStatus._predictionsStartTime);
+        std::cout << "Predictions Elapsed time: " << _clientActionStatus._predictionsElapsedTime.count() << " milliseconds\n";
+    }
 }

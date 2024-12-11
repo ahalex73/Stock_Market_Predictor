@@ -1,0 +1,33 @@
+{
+    "is_server": true,
+    "server_socket": {
+        "ip" : "127.0.0.1",
+        "port" : "10000"
+    },    
+    "client_list": [
+        {
+            "app_name": "Predictor_SYK",
+            "ip": "127.0.0.1",
+            "port_number": "10001",
+            "stock_list" : "SYK"
+        },
+        {
+            "app_name": "Predictor_AAL",
+            "ip": "127.0.0.1",
+            "port_number": "10002",
+            "stock_list" : "AAL"
+        },
+        {
+            "app_name": "Predictor_AAPL",
+            "ip": "127.0.0.1",
+            "port_number": "10003",
+            "stock_list" : "AAPL"
+        },
+        {
+            "app_name": "Predictor_NVDA",
+            "ip": "127.0.0.1",
+            "port_number": "10004",
+            "stock_list" : "NVDA"
+        }
+    ]
+}

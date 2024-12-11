@@ -177,7 +177,7 @@ bool ParallelClient::RunDownloadData(std::string msg)
     }
     
     AddMessageToQueue(MessageTypes::STOCK_DATA_READY, "ready");
-     return true;
+    return true;
 }
 
 bool ParallelClient::RunTrainModel(std::string msg)
